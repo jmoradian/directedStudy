@@ -59,8 +59,11 @@ def main():
 		postTheseTweets = len(allTweets)
 		print 'num tweets from api: ', len(thisIterTweets), 'num tweets added: ', postTheseTweets-preTheseTweets
 		print 'iter:', iter_, ' numTweets: ', len(allTweets)
-	
-	pkl.dump(allTweets, "allTweets2")
+		iter_ += 1
+		time.sleep(5)
+	for tweet in allTweets:
+		print tweet
+		break
 
 	# statuses = api.GetSearch(term='bitcoin', count=100)
 	# print statuses[0] == statuses[0]
