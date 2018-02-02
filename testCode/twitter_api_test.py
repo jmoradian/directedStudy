@@ -1,76 +1,68 @@
 import twitter, requests, time, pickle as pkl
-
-CONSUMER_KEY='vdp2mFsEfUOzoF7c3UbptAIHA'
-CONSUMER_SECRET='iiumhVNsOTHqCRVbokFZ8C7qNjCD2Jav2ksg4snq4EWNEVd34V'
-ACCESS_TOKEN_KEY='1961862606-6U3xLyyaXh9DTw39hONBnNwObs8nzAGbaCRYZ1H'
-ACCESS_TOKEN_SECRET='pnykzbUsHjNH3gqIGNJ9uKTbqTXc5MvBXgOK6Vf3XTFnk'
-
-api = twitter.Api(consumer_key=CONSUMER_KEY,
-				  consumer_secret=CONSUMER_SECRET,
-				  access_token_key=ACCESS_TOKEN_KEY,
-				  access_token_secret=ACCESS_TOKEN_SECRET,
-				  # sleep_on_rate_limit=True
-				  )
+from dateutil.parser import parse
+from utils import *
 
 
-LOCATIONS = [('37.7749', '-122.4194', '50'), 	# San Francisco
-			 ('40.7128', '-74.0060', '50')		# New York
-			]
-
-# print len(statuses)
-# print
-# for index, status in enumerate(statuses):
-# 	print index
-# 	print status.created_at, "  ", status.text
-
-def addTweetsToAllTweets(allTweets, thisIterTweets):
-	for tweet in thisIterTweets:
-		allTweets.add(tweet)
-
-	return allTweets
-
-
-def getTweets():
-	# for lat, lng, rad in LOCATIONS:
-	# 	geocode_ = lat + ',' + lng + ',' + rad + 'mi'
+def getTweets(api):
 	try:
 		statuses = api.GetSearch(
 								 term='bitcoin',
 								 lang='en',
-								 # geocode=geocode_,
 								 count=100)
 	except twitter.error.TwitterError:
 		print "rate limit exceeded"
-		time.sleep(1)
-
+		return []
 
 	return statuses
 
+def runIterations(api):
+	tweets = set()
+	for _ in range(180):
+		thisIterTweets = getTweets(api)
+		tweets |= set(thisIterTweets)
+	return tweets
+
+def collectTweets():
+	nariTweets = set()
+	jordanTweets = set()
+	
+	t0 = time.time()
+	#iterate through first account
+	nariTweets = runIterations(apiNarimon)
+	
+	print "Done with first account. Time cost: ", time.time() - t0
+	toSleep = TOTAL_SLEEP_TIME - (time.time() - t0)
+	time.sleep(toSleep)
+
+	#iterate through second account
+	jordanTweets = runIterations(apiJordan)
+
+	#merge tweet sets
+	return nariTweets | jordanTweets
 
 def main():
-	allTweets = set()
-	iter_ = 0
+	if raw_input("Collect tweets? (y/n)   ") == 'y':
+		allTweets = collectTweets()
+		write.pickle(allTweets, "allTweetsJordan.pkl")
+	else: allTweets = loadPickle("allTweetsJordan.pkl")
+	min_ = time.time()
+	max_ = 0
+	for tweet in allTweets:
+		curr = time.mktime(parse(tweet.created_at).timetuple())
+		if curr < min_: min_ = curr
+		if curr > max_: max_ = curr
+	maxDate, minDate = datetime.utcfromtimestamp(min_), datetime.utcfromtimestamp(max_)
+	print maxDate, minDate
 
-	startTime = time.time()
-	while time.time() - startTime < 1:
-		thisIterTweets = getTweets()
-		preTheseTweets = len(allTweets)
-		allTweets = addTweetsToAllTweets(allTweets, thisIterTweets)
-		postTheseTweets = len(allTweets)
-		print 'num tweets from api: ', len(thisIterTweets), 'num tweets added: ', postTheseTweets-preTheseTweets
-		print 'iter:', iter_, ' numTweets: ', len(allTweets)
-	
-	pkl.dump(allTweets, "allTweets2")
 
-	# statuses = api.GetSearch(term='bitcoin', count=100)
-	# print statuses[0] == statuses[0]
-	# print statuses[0] == statuses[1]
 
-	# dictTest = {}
-	# dictTest[statuses[0]] = True
-	# if statuses[0] in dictTest: print 'ayy'
-	# if statuses[1] not in dictTest: print 'ayy'
-	
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
 	main()
