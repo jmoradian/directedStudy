@@ -1,7 +1,20 @@
-import csv
+import csv, time
 import Tweet
 
+PROGRESS_FILEPATH = 'Reporting/progressReport.txt'
+ERROR_FILEPATH = 'Reporting/errorReport.txt'
 
+def writeProgressReport(iter_, lenTweets):
+	report =  "iter : " + str(iter_) + " time : " + str(time.time()) + " len(tweets) : " + str(lenTweets) + '\n'
+	file_ = open(PROGRESS_FILEPATH, 'a')
+	file_.write(report)
+	file_.close()
+
+def writeErrorReport():
+	report =  "Error at time : " + str(time.time()) + '\n'
+	file_ = open(ERROR_FILEPATH, 'a')
+	file_.write(report)
+	file_.close()
 
 def initializeCSV(filename):
 	fieldnames = Tweet.KEYS

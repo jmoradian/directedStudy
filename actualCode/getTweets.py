@@ -7,7 +7,8 @@ NUM_TWEETS_PER_15_MINS = 180
 NUM_SECONDS_IN_15_MINS = 900
 TIME_PER_API = NUM_SECONDS_IN_15_MINS / NUM_APIS
 
-FILENAME = 'testbaby.csv'
+DATA_FILEPATH = 'TweetData/'
+
 
 def makeTwitterRequest(api):
 	try:
@@ -16,7 +17,7 @@ def makeTwitterRequest(api):
 							 lang='en',
 							 count=100)
 	except twitter.error.TwitterError:
-		print "error"
+		writeData.writeErrorReport()
 		return []
 
 def getTweets(api):
@@ -28,21 +29,29 @@ def getTweets(api):
 	return tweets
 	
 
-def main():
-	writeData.initializeCSV(FILENAME)
+def runProcessFourTimes():
+	fname = DATA_FILEPATH + str(time.time()) + '_data.csv'
+	writeData.initializeCSV(fname)
 
 	iter_ = 0
-	while True:
+	for _ in range(1):
 		tweets = set()
 		for api in APIS:
 			startTime = time.time()
 			tweets |= set(getTweets(api))
 			iter_ += 1
-			print iter_, " : ", time.time() - startTime, "seconds", " : ", len(tweets), "tweets"
+			writeData.writeProgressReport(iter_, len(tweets))
 			sleepTime = max(TIME_PER_API - (time.time() - startTime), 0)
 			time.sleep(sleepTime)
 
-		writeData.writeTweetsToCSV(FILENAME, tweets)
+		writeData.writeTweetsToCSV(fname, tweets)
+
+def main():
+	while True:
+		try:
+			runProcessFourTimes()
+		except:
+			pass
 
 
 
