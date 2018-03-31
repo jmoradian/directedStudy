@@ -1,5 +1,5 @@
 import time, twitter
-import Tweet, writeData
+import Tweet, WriteData, Storage
 from accountInfo import APIS
 
 NUM_APIS = len(APIS)
@@ -8,6 +8,7 @@ NUM_SECONDS_IN_15_MINS = 900
 TIME_PER_API = NUM_SECONDS_IN_15_MINS / NUM_APIS
 
 DATA_FILEPATH = 'TweetData/'
+REPORTING_FILEPATH = 'Reporting/'
 
 
 def makeTwitterRequest(api):
@@ -46,8 +47,9 @@ def runProcessFourTimes():
 
 		writeData.writeTweetsToCSV(fname, tweets)
 
+
 def main():
-	while True:
+	while Storage.calculateStorageUse() < 4500000000:
 		try:
 			runProcessFourTimes()
 		except:
