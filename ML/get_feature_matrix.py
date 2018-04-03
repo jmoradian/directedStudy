@@ -1,42 +1,57 @@
-import csv, numpy as np
+import csv, numpy as np, tweepy, textblob
 
 GAPS = [60, 120, 360, 720, 1440]
-SENTIMENT_BINS = [0.5, 0., -0.5, -1.]
+SENTIMENT_BINS = [-1., -0.5, 0., 0.5]
 TWEET_PARAMS = []
+TWEET_TEXT_INDEX = 
 
-def getLabel(data, currentTimestep):
-	label = data[currentTimestep + 60][-1] - data[currentTimestep][-1]
+def getLabel(priceData, timestep):
+	label = data[timestep + 60][-1] - data[timestep][-1]
 	return label
 
-def getLabelVector(data):
+def getLabelVector(priceData):
 	labels = []
 	for timestep in range(len(data)):
 		label = getLabel(data, timestep)
 		labels.append(label)
 	return np.array(labels)
 
-def getPriceChange(data, currentTimestep):
+def getPriceChanges(priceData, timestep):
 	deltas = []
 	prices = [row[-1:] for row in data]
 	for gap in GAPS:
-		if (currentTimestep > gap): delta = data[currentTimestep][-1] - data[currentTimestep - gap][-1]
+		if (timestep > gap): delta = data[timestep][-1] - data[timestep - gap][-1]
 		else: delta = None
 		deltas.append(delta)
 	return np.array(deltas)
 
 def getTweetSentiment(tweet):
+	text = tweet[TWEET_TEXT_INDEX]
+	analysis = textblob.TextBlob(text) # may need to rid text of special characters
+	return analysis.sentiment.polarity
 
 def discretizeSentiment(sentiment):
+	for ind_, bin in enumerate(SENTIMENT_BINS):
+		if sentiment < bin: return (ind_ - 1)
+	return len(SENTIMENT_BINS) - 1
 
 def aggregateSentiments(tweets):
 	sentimentDict = {bin: [0] * len(TWEET_PARAMS) for bin in SENTIMENT_BINS}
 	for tweet in tweets:
 		sentiment = getTweetSentiment(tweet)
 		bin = discretizeSentiment(sentiment)
+		# feat is the feature index
 		for feat, featVal in enumerate(tweet):
 			sentimentDict[bin][feat] += featVal
 	return sentimentDict.values()
 
-def getFeatureMatrix(data, timestep):
-	
+def getFeatureMatrix(priceData, tweets, timestep):
+	priceChanges = getPriceChanges(priceData, timestep)
+	tweetFeatsBySent = aggregateSentiments(tweets) #dictionary
+	vectorizedTweetFeats = []
+	vectorizedTweetFeats.append(sentFeatures) for sentFeatures in tweetFeatsBySent.values()
+	vectorizedTweetFeats.append(priceChanges)
+	return vectorizedTweetFeats
+
+
 
