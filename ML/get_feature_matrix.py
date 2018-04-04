@@ -25,16 +25,20 @@ def getPriceChanges(priceData, timestep):
 		deltas.append(delta)
 	return np.array(deltas)
 
+# uses textblob library to analyze the tweet sentiment
+# 	- textblob is trained on movie review data
 def getTweetSentiment(tweet):
 	text = tweet[TWEET_TEXT_INDEX]
 	analysis = textblob.TextBlob(text) # may need to rid text of special characters
 	return analysis.sentiment.polarity
 
+# floors sentiment to closest bin
 def discretizeSentiment(sentiment):
 	for ind_, bin in enumerate(SENTIMENT_BINS):
 		if sentiment < bin: return (ind_ - 1)
 	return len(SENTIMENT_BINS) - 1
 
+#returns a list of feature lists at each sentiment level
 def aggregateSentiments(tweets):
 	sentimentDict = {bin: [0] * len(TWEET_PARAMS) for bin in SENTIMENT_BINS}
 	for tweet in tweets:
@@ -47,7 +51,7 @@ def aggregateSentiments(tweets):
 
 def getFeatureMatrix(priceData, tweets, timestep):
 	priceChanges = getPriceChanges(priceData, timestep)
-	tweetFeatsBySent = aggregateSentiments(tweets) #dictionary
+	tweetFeatsBySent = aggregateSentiments(tweets) 
 	vectorizedTweetFeats = []
 	vectorizedTweetFeats.append(sentFeatures) for sentFeatures in tweetFeatsBySent.values()
 	vectorizedTweetFeats.append(priceChanges)
