@@ -1,0 +1,2 @@
+ iter : 1 time : 1523038126.53 len(tweets) : 0
+iter : 2 time : 1523038645.64 len(tweets) : 16491
