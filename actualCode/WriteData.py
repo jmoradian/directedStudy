@@ -1,8 +1,10 @@
-import csv, time
+import csv, time, os
 import Tweet
 
 PROGRESS_FILEPATH = 'Reporting/progressReport.txt'
 ERROR_FILEPATH = 'Reporting/errorReport.txt'
+CSV_FILEPATH = 'TweetData/'
+
 
 def writeProgressReport(iter_, lenTweets):
 	report =  "iter : " + str(iter_) + " time : " + str(time.time()) + " len(tweets) : " + str(lenTweets) + '\n'
@@ -29,3 +31,24 @@ def writeTweetsToCSV(filename, tweets):
 		for tweet in tweets:
 			tweetDict = tweet.getTweetValDict()
 			writer.writerow(tweetDict)
+
+def compileCSVFiles():
+	initializeCSV('compiledTweetData.csv')
+	with open('compiledTweetData.csv', "a") as fout:
+		for filename in os.listdir(CSV_FILEPATH):
+			file_ = open(filename)
+			file_.next()
+			for tweet in file_:
+				fout.write(tweet)
+
+
+
+
+
+
+
+
+
+
+
+

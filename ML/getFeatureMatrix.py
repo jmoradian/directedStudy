@@ -1,10 +1,11 @@
-import csv, numpy as np, tweepy, textblob
+import csv, numpy as np, tweepy, textblob, calendar
+from dateutil import parser
 import ReadData
 
 GAPS = [60, 120, 360, 720, 1440]
 SENTIMENT_BINS = [-1., -0.5, 0., 0.5]
 TWEET_PARAMS = []
-TWEET_TEXT_INDEX = 
+FEATURE_LENGTH = 8, DATE_INDEX = 1, TWEET_TEXT_INDEX = 3
 
 def getLabel(priceData, timestep):
 	label = data[timestep + 60][-1] - data[timestep][-1]
@@ -58,25 +59,31 @@ def getFeatureMatrix(priceData, tweets, timestep):
 	vectorizedTweetFeats.append(priceChanges)
 	return vectorizedTweetFeats
 
+def getTimeStamp(timeStr):
+	parsedDate = parser.parse(timeStr)
+	timestamp = calendar.timegm(parsedDate)
+	return timestamp
+
+def convertDateToIndex(date_):
+	return date_ // 60
+
+def getMinuteArray():
+	minTime, maxTime = getTimeRange(allTweets)
+	minTimestamp, maxTimestamp = getTimeStamp(minTime), getTimeStamp(maxTime)
+	arrayLen = convertDateToIndex(maxTimestamp - minTimestamp) #normalized from second based to minute based
+	minuteBuckets = [[] for i in range(arrayLen)]
+	return minuteBuckets
 
 def aggregateByMinute():
 	allTweets = ReadData.CSVFileToMatrix()
-	allSortedTweets = ReadData.sortMatrixByDate(allTweets)
+	minuteBuckets = getMinuteArray(allTweets)
+	for tweet in allTweets:
+		sentiment = getTweetSentiment(tweet)
+		tweet[TWEET_TEXT_INDEX] = sentiment
+		index = getTimeStamp(tweet[DATE_INDEX])
+		minuteBuckets[index].append(tweet)
+
 	# easy to be really inefficient
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
