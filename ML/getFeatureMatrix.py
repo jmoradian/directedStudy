@@ -1,4 +1,5 @@
 import csv, numpy as np, tweepy, textblob
+import ReadData
 
 GAPS = [60, 120, 360, 720, 1440]
 SENTIMENT_BINS = [-1., -0.5, 0., 0.5]
@@ -56,6 +57,27 @@ def getFeatureMatrix(priceData, tweets, timestep):
 	vectorizedTweetFeats.append(sentFeatures) for sentFeatures in tweetFeatsBySent.values()
 	vectorizedTweetFeats.append(priceChanges)
 	return vectorizedTweetFeats
+
+
+def aggregateByMinute():
+	allTweets = ReadData.CSVFileToMatrix()
+	allSortedTweets = ReadData.sortMatrixByDate(allTweets)
+	# easy to be really inefficient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
