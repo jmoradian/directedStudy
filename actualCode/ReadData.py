@@ -5,10 +5,8 @@ def sortMatrixByDate(matrix):
 	matrix.sort(key=lambda x: x[1])
 	return matrix
 
+
+""" given the filepath to a csv, returns a matrix. """
 def CSVFileToMatrix():
-	tweetMatrix = []
-	with open('compiledTweetData.csv', 'r') as file_:
-		file_.next()
-		for tweet in file_: tweetMatrix.append(tweet)
-	return tweetMatrix	
-	
+	with open("compiledTweetData.csv", 'r') as file_:
+		return [row for row in csv.reader(file_.read().splitlines())][1:]

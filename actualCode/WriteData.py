@@ -33,10 +33,11 @@ def writeTweetsToCSV(filename, tweets):
 			writer.writerow(tweetDict)
 
 def compileCSVFiles():
+	print "in compile"
 	initializeCSV('compiledTweetData.csv')
 	with open('compiledTweetData.csv', "a") as fout:
 		for filename in os.listdir(CSV_FILEPATH):
-			file_ = open(filename)
+			file_ = open(CSV_FILEPATH + filename)
 			file_.next()
 			for tweet in file_:
 				fout.write(tweet)
