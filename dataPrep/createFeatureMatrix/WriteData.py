@@ -1,14 +1,12 @@
 import csv, time, os
 
 KEYS =  [
-		'favorite_count',
-		'created_at',
-		'retweet_count',
-		'sentiment',
-		'followers_count',
-		'verified',
-		'friend_count',
-		]
+	'created_at',
+	'retweet_count',
+	'sentiment',
+	'followers_count',
+	'verified'
+	]
 
 
 def initializeCSV(filename):
@@ -20,7 +18,7 @@ def initializeCSV(filename):
 
 def writeFinalProduct(minuteBuckets):
 	for index, minute in enumerate(minuteBuckets):
-		filename = '../buckets/' + str(index) + '.csv'
+		filename = '../minutes/' + str(index) + '.csv'
 		initializeCSV(filename)
 		with open(filename, 'a') as csvfile:
 			writer = csv.writer(csvfile)

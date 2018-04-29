@@ -1,11 +1,17 @@
-import string
-# import textblob
+import string, calendar
+from dateutil import parser
 
+FAVORITE_INDEX = 0
+DATE_INDEX = 1
 TEXT_INDEX = 3
+LISTED_INDEX = 5
 VERIFIED_INDEX = 6
 FRIEND_INDEX = 7
-LISTED_INDEX = 5
 
+def getTimeStamp(timeStr):
+	parsedDate = parser.parse(timeStr)
+	timestamp = calendar.timegm(parsedDate.timetuple())
+	return timestamp
 
 # uses textblob library to analyze the tweet sentiment
 # 	- textblob is trained on movie review data
@@ -19,5 +25,7 @@ def getTweetSentiment(tweet):
 def preProcessTweet(tweet):
 	tweet[TEXT_INDEX] = getTweetSentiment(tweet)
 	tweet[VERIFIED_INDEX] = 0 if tweet[VERIFIED_INDEX] == "False" else 1
+	tweet[DATE_INDEX] = getTimeStamp(tweet[DATE_INDEX])
 	del tweet[FRIEND_INDEX]
 	del tweet[LISTED_INDEX]
+	del tweet[FAVORITE_INDEX]

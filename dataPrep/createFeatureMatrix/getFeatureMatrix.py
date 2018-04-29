@@ -6,8 +6,7 @@ import Featurize
 FEATURE_LENGTH = 8
 DATE_INDEX = 1
 SECONDS_IN_MIN = 60
-MIN_TIME = 1523038920
-
+MIN_TIME = 1523049660
 
 def getTimeStamp(timeStr):
 	parsedDate = parser.parse(timeStr)
@@ -27,12 +26,11 @@ def getMaxTime(tweets):
 def getMinuteArray(allTweets):
 	maxTime = getMaxTime(allTweets)
 	arrayLen = convertDateToIndex(maxTime) #normalized from second based to minute based
-	print "arrayLen:", arrayLen, "maxTime:", maxTime
 	minuteBuckets = [[] for _ in range(arrayLen)]
 	return minuteBuckets, maxTime
 
 def placeTweetInBucket(tweet, minuteBuckets, maxTime):
-	timestamp = getTimeStamp(tweet[DATE_INDEX])
+	timestamp = tweet[DATE_INDEX - 1] #favorite count has been removed
 	if (timestamp >= MIN_TIME) and (timestamp < maxTime):
 		index = convertDateToIndex(timestamp)
 		minuteBuckets[index].append(tweet)
