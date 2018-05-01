@@ -47,7 +47,7 @@ def normalizeFeatureVector(featureVector):
 
 	for featureIndex,val in enumerate(featureVector):
 		sumIndex = featureIndex % NUM_FEATURES_PER_BUCKET
-		featureVector[featureIndex] = val / max(sums[sumIndex], 1)
+		featureVector[featureIndex] = val / max(sums[sumIndex], 1.)
 
 	return featureVector
 
@@ -84,7 +84,7 @@ def getSentiment(tweet):
 def preProcessTweet(tweet):
 	tweet = tweet[:SENTIMENT_INDEX] + tweet[SENTIMENT_INDEX+1 :]
 	tweet = tweet[:CREATED_AT_INDEX] + tweet[CREATED_AT_INDEX+1 :]
-	return [int(val) for val in tweet]
+	return [float(val) for val in tweet]
 
 
 def convertTimestepToFeatureVector(timestep, bucketSize):

@@ -1,4 +1,4 @@
-import string, calendar
+import string, calendar, textblob
 from dateutil import parser
 
 FAVORITE_INDEX = 0
@@ -18,8 +18,8 @@ def getTimeStamp(timeStr):
 def getTweetSentiment(tweet):
 	printable = set(string.printable)
 	tweetText = filter(lambda char_: char_ in printable, tweet[TEXT_INDEX])
-	# analysis = textblob.TextBlob(text) # may need to rid text of special characters
-	return .5
+	sentiment = float(textblob.TextBlob(tweetText).sentiment.polarity) # may need to rid text of special characters
+	return sentiment
 
 
 def preProcessTweet(tweet):

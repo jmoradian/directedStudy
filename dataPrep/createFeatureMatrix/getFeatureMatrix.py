@@ -38,14 +38,19 @@ def placeTweetInBucket(tweet, minuteBuckets, maxTime):
 def bucketByMinute(allTweets):
 	minuteBuckets, maxTime = getMinuteArray(allTweets)
 	for tweet in allTweets:
+		print "before preProcessTweet"
 		Featurize.preProcessTweet(tweet)
+		print "after preProcessTweet"
 		placeTweetInBucket(tweet, minuteBuckets, maxTime)
 	return minuteBuckets
 
 def main():
 	allTweets = ReadData.compileCSVFiles()
+	print "done reading."
 	minuteBuckets = bucketByMinute(allTweets)
+	print "done bucketing"
 	WriteData.writeFinalProduct(minuteBuckets)
+	# O(an + bn + cn + dn) ~ an is around 4min
 
 
 if __name__ == "__main__":
