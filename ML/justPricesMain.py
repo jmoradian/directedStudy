@@ -38,7 +38,7 @@ def getPriceDataContinuous():
 # to test with just price data
 def main():
 	trainingData, labels = getPriceDataContinuous()
-	rnn = RNN.RNN(learning_rate = .01, state_dimension = 1, input_size = 800, output_size = 1, hidden_state_size = 512)
+	rnn = RNN.RNN(learning_rate = .01, state_dimension = 1, input_size = 100, output_size = 1, hidden_state_size = 512)
 	rnn.runnSess(trainingData, labels)
 
 
