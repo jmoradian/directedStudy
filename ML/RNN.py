@@ -5,50 +5,53 @@ from math import sqrt
 # 		- change labels to onehot vector (1 == pos change) 
 # 		- input needs to be series of size [featurelength X desired length of sequence]
 
+# not learning --- maybe change loss function
+
 class RNN(object):
-	def __init__(self, learning_rate, state_dimension, input_size, output_size, hidden_state_size):
+	def __init__(self, learning_rate, state_dimension, input_size, output_size, hidden_state_size, categorical):
 		tf.reset_default_graph()
 		self.learning_rate = learning_rate
 		self.state_dimension = state_dimension
 		self.input_size = input_size
 		self.output_size = output_size
 		self.hidden_state_size = hidden_state_size
+		self.categorical = categorical
 		self.batch_size = 1
 
 		# tf Graph input
 		self.inSeq = tf.placeholder("float", [None, self.input_size, self.state_dimension], name = "inp_seq")
 		# should rename input_size to sequence size
-		# self.labels = tf.placeholder("float", [None, self.output_size], name = "labels")
-		self.labels = tf.placeholder("float", [None, self.input_size, self.output_size], name = "labels")
+		self.labels = tf.placeholder("float", [None, self.output_size], name = "labels")
+		# self.labels = tf.placeholder("float", [None, self.input_size, self.output_size], name = "labels")
 
 		# RNN output node weights and biases
 		self.weights = {'out': tf.Variable(tf.random_normal([self.hidden_state_size, self.output_size]), name = "W")}
 		self.biases = {'out': tf.Variable(tf.random_normal([self.output_size]), name = "b")}
 		tf.summary.histogram('weights', self.weights['out'])
   		tf.summary.histogram('biases', self.biases['out'])
-		print "##########################"
-
-		self.pred = self.rnn(self.inSeq, self.weights, self.biases, name = "rnn")
+		# print "##########################"
+		
+		if categorical: self.pred = tf.nn.softmax(self.rnn(self.inSeq, self.weights, self.biases, name = "rnn"))
+		else: self.pred = self.rnn(self.inSeq, self.weights, self.biases, name = "rnn")
 		# self.pred = self.rnnScratch(self.inSeq, self.labels, self.weights, self.biases, name = "rnn")
 
 		# Loss and optimizer (change to categorical cross_entropy) - UPDATE: this is a discrete loss function
-		# self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.pred, labels=self.labels))
 		with tf.name_scope("loss"):
-			# self.loss = tf.reduce_mean(self.pred[1])
-			self.loss = tf.reduce_mean(tf.losses.mean_squared_error(predictions=self.pred, labels=self.labels))
+			if categorical: self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.pred, labels=self.labels))
+			else: self.loss = tf.reduce_mean(tf.losses.mean_squared_error(predictions=self.pred, labels=self.labels))
 		with tf.name_scope("train"):
 			self.optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
-		print "optimizer initialized"
+		# print "optimizer initialized"
 
 		# Model Evaluation
 		# self.correct_pred = tf.equal(tf.argmax(self.pred,1), tf.argmax(self.labels,1))
-		self.accuracy =  self.loss
-		# self.accuracy = tf.metrics.mean_squared_error(labels = self.labels, predictions = self.pred)
-		print "#########################"
+		if categorical: self.accuracy = tf.metrics.accuracy(labels=tf.argmax(self.labels, 0), predictions=tf.argmax(self.pred,0))
+		else: self.accuracy =  self.loss
+		# print "#########################"
 
 		# Initializing the variables
 		self.init = tf.global_variables_initializer()
-		print "variables initialized"
+		# print "variables initialized"
 		self.step_size = self.input_size
 		# Save trained model
 		self.saver = tf.train.Saver()
@@ -64,7 +67,7 @@ class RNN(object):
 		self.merged_summary = tf.summary.merge_all()
 		self.writer = tf.summary.FileWriter(self.logs_path)
 
-		print "writer initialzed"
+		# print "writer initialzed"
 
 	def rnn(self, inSeq, weights, biases, name = "rnn"):
 		with tf.name_scope(name):
@@ -85,9 +88,9 @@ class RNN(object):
 			outputs, states = rnn.static_rnn(rnn_cell, inSeq, dtype=tf.float32)
 			# print outputs[-1].get_shape()
 			# output rn is of size of feature vector because its not unraveling the input sequence
-			# return tf.matmul(outputs[-1], weights['out']) + biases['out']
-			predictions = [tf.matmul(output, weights['out']) + biases['out']  for output in outputs]
-			return predictions
+			return tf.matmul(outputs[-1], weights['out']) + biases['out']
+			# predictions = [tf.matmul(output, weights['out']) + biases['out']  for output in outputs]
+			# return predictions
 
 
 	def rnnScratch(self, inSeq, weights, biases, name = "lstm"):
@@ -141,48 +144,50 @@ class RNN(object):
 
 	def trainStep(self, step, sess, trainingData, labels):
 		batchData = trainingData[step:step + self.step_size]
-		batchLabels = labels[step:step + self.step_size] #will probably have to reshape
-		# batchLabels = [labels[step + self.step_size]]
+		# batchLabels = labels[step:step + self.step_size] #will probably have to reshape
+		batchLabels = [labels[step + self.step_size]]
 		# specific for just bitcoin data
 		batchData = np.reshape(batchData, (1, self.input_size, self.state_dimension))
-		batchLabels = np.reshape(batchLabels, (1, self.input_size, self.output_size))
+		# batchLabels = np.reshape(batchLabels, (1, self.input_size, self.output_size))
 		return sess.run([self.optimizer, self.accuracy, self.loss, self.pred], \
 								feed_dict={self.inSeq: batchData, self.labels: batchLabels})
 
 	def validationStep(self, step, sess, trainingData, labels):
 		batchData = trainingData[step:step + self.step_size]
-		batchLabels = labels[step:step + self.step_size] #will probably have to reshape
-		# batchLabels = [labels[step + self.step_size]]
+		# batchLabels = labels[step:step + self.step_size] #will probably have to reshape
+		batchLabels = [labels[step + self.step_size]]
 		# specific for just bitcoin data
 		batchData = np.reshape(batchData, (1, self.input_size, self.state_dimension))
-		batchLabels = np.reshape(batchLabels, (1, self.input_size, self.output_size))
-		return sess.run([self.merged_summary, self.loss], feed_dict={self.inSeq: batchData, self.labels: batchLabels})
+		# batchLabels = np.reshape(batchLabels, (1, self.input_size, self.output_size))
+		return sess.run([self.merged_summary, self.loss, self.accuracy], feed_dict={self.inSeq: batchData, self.labels: batchLabels})
 
-	def runnSess(self, trainingData, labels):
+	def runnSess(self, trainingData, labels, iterations):
 		with tf.Session() as sess:
 			sess.run(self.init)
+			sess.run(tf.local_variables_initializer())
 
 			# Conditionally restore model weights ---- this does not work
 			# if raw_input("Restore training session (y/n)   ") == 'y':
 			# 	self.restoreSession(sess)
 
 			self.writer.add_graph(sess.graph)
-			acc_total, loss_total, step, iter_ = 0, 0, 0, 1
-			
-			while step < min(len(trainingData), len(labels)) - self.step_size:
-				if iter_ % 20 == 0:
-					summ, val_loss = self.validationStep(step, sess, trainingData, labels)
-					self.writer.add_summary(summ, iter_)
-					print "Validation loss at timestep " + str(step) + " is " + str(val_loss), "last batchPred:", batchPred[-1], "labels:", labels[step + self.step_size]
-					acc_total, loss_total, iter_ = 0, 0, 0
-				_, acc, loss, batchPred = self.trainStep(step, sess, trainingData, labels)
-				# print self.biases['out'].eval()
-				loss_total += loss
-				acc_total += acc
+			for i_ in range(iterations):
+				acc_total, loss_total, step, iter_ = 0, 0, 0, 1
+				last_step = min(len(trainingData), len(labels)) - self.step_size
+				while step < last_step:
+					if iter_ % 20 == 0:
+						summ, val_loss, val_acc = self.validationStep(step, sess, trainingData, labels)
+						self.writer.add_summary(summ, iter_)
+						if self.categorical: print "Timestep: " + str(step + last_step * i_), " Val_loss: " + str(val_loss), " Val_acc: " + str(val_acc[0]),"last batchPred:", batchPred[-1], "labels:", labels[step + self.step_size]
+						else: print "Timestep: " + str(step + last_step * i_), " Val_loss: " + str(val_loss), " Val_loss: " + str(val_acc),"last batchPred:", batchPred[-1], "labels:", labels[step + self.step_size]
+						acc_total, loss_total, iter_ = 0, 0, 0
+					_, acc, loss, batchPred = self.trainStep(step, sess, trainingData, labels)
+					# print self.biases['out'].eval()
+					loss_total += loss
+					acc_total += acc[0]
 
-				step += self.step_size//8
-				iter_ += 1		
-
+					step += self.step_size//16
+					iter_ += 1		
 			return loss_total/float(iter_)	
 
 

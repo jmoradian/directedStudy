@@ -38,9 +38,7 @@ def placeTweetInBucket(tweet, minuteBuckets, maxTime):
 def bucketByMinute(allTweets):
 	minuteBuckets, maxTime = getMinuteArray(allTweets)
 	for tweet in allTweets:
-		print "before preProcessTweet"
 		Featurize.preProcessTweet(tweet)
-		print "after preProcessTweet"
 		placeTweetInBucket(tweet, minuteBuckets, maxTime)
 	return minuteBuckets
 

@@ -47,12 +47,9 @@ def runContinuousQuery(exchange, from_timestamp, filename):
 def main():
 	exchange = ccxt.bitfinex()
 	filename = 'priceData.csv'
-	from_datetime = '2018-04-18T15:35:00.000Z'
+	from_datetime = '2018-04-18T15:32:00.000Z'
 	updatedEndTime = catchUp(exchange, from_datetime, filename)
-	runContinuousQuery(exchange, updatedEndTime, filename)
-
-	
-
+	# runContinuousQuery(exchange, updatedEndTime, filename)
 
 
 

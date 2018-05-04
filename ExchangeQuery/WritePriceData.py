@@ -15,7 +15,6 @@ def writePricesToCSV(filename, ohlcv, exchange):
 			parseEntryDate(entry, exchange)
 			entryDict = getPriceEntryDict(fieldnames, entry)
 			writer.writerow(entryDict)
-			writer.write('\n')
 
 def initializeCSV(filename):
 	if not os.path.isfile(filename):
